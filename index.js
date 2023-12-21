@@ -102,7 +102,58 @@ async function run() {
       res.send(result);
     });
 
-    
+    // Get Task data using user email
+    app.get("/Task/:email", verifyToken, async (req, res) => {
+        const email = req.params.email;
+        const query = { taskfor: email };
+        const result = await dataCollection
+          .find(query)
+          .sort({ _id: -1 })
+          .toArray();
+        res.send(result);
+      });
+    // Delete a A Task
+    app.delete("/Task/delete/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await dataCollection.deleteOne(query);
+        res.send(result);
+      });
+
+    // get single Task by id
+    app.get("/Tasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const quary = { _id: new ObjectId(id) };
+      const result = await dataCollection.findOne(quary);
+      res.send(result);
+    });
+
+    // Update Task information to database
+    app.put("/Task/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const data = req.body;
+      const updatedDoc = {
+        $set: {
+          title: data.title,
+          details: data.details,
+          taskfor: data.taskfor,
+          priority: data.priority,
+          list: data.list,
+          TaskDeadline: data.TaskDeadline,
+        },
+      };
+      const options = { upsert: true };
+      const result = await dataCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+
+
     // JWT
     app.post("/jwt", async (req, res) => {
       const user = req.body;
